@@ -14,7 +14,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
 }
 
 class WaveformsDashboard extends StatefulWidget {
-  const WaveformsDashboard({Key? key}) : super(key: key);
+  const WaveformsDashboard({super.key});
 
   @override
   State<WaveformsDashboard> createState() => _WaveformsDashboardState();
@@ -36,9 +36,10 @@ class WaveformsDashboard extends StatefulWidget {
 class _WaveformsDashboardState extends State<WaveformsDashboard> {
   late Duration maxDuration;
   late Duration elapsedDuration;
-  late AudioCache audioPlayer;
+  late AudioPlayer audioPlayer;
   late List<double> samples;
   double sliderValue = 0;
+
   // Change this value to number of audio samples you want.
   // Values between 256 and 1024 are good for showing [RectangleWaveform] and [SquigglyWaveform]
   // While the values above them are good for showing [PolygonWaveform]
@@ -77,15 +78,14 @@ class _WaveformsDashboardState extends State<WaveformsDashboard> {
   }
 
   Future<void> playAudio() async {
-    await audioPlayer.load(audioData[1]);
-    await audioPlayer.play(audioData[1]);
+    await audioPlayer.setSourceAsset(audioData[1]);
+    await audioPlayer.resume();
     // maxDuration in milliseconds
     await Future.delayed(const Duration(milliseconds: 200));
 
-    int maxDurationInmilliseconds =
-        await audioPlayer.fixedPlayer!.getDuration();
+     await audioPlayer.getDuration()
+        .then((value) => maxDuration = value!);
 
-    maxDuration = Duration(milliseconds: maxDurationInmilliseconds);
   }
 
   @override
@@ -93,9 +93,7 @@ class _WaveformsDashboardState extends State<WaveformsDashboard> {
     // TODO: implement initState
     super.initState();
     audioData = audioDataList[0];
-    audioPlayer = AudioCache(
-      fixedPlayer: AudioPlayer(),
-    );
+    audioPlayer = AudioPlayer();
 
     parseData();
 
@@ -103,13 +101,13 @@ class _WaveformsDashboardState extends State<WaveformsDashboard> {
     maxDuration = const Duration(milliseconds: 1000);
     elapsedDuration = const Duration();
 
-    audioPlayer.fixedPlayer!.onPlayerCompletion.listen((_) {
+    audioPlayer.onPlayerComplete.listen((_) {
       setState(() {
         elapsedDuration = maxDuration;
         sliderValue = 1;
       });
     });
-    audioPlayer.fixedPlayer!.onAudioPositionChanged.listen((Duration p) {
+    audioPlayer.onPositionChanged.listen((Duration p) {
       setState(() {
         elapsedDuration = p;
         sliderValue = p.inMilliseconds / maxDuration.inMilliseconds;
@@ -273,15 +271,16 @@ class _WaveformsDashboardState extends State<WaveformsDashboard> {
                 // await audioPlayer.fixedPlayer!.resume();
               },
               onChangeStart: (double value) async {
-                await audioPlayer.fixedPlayer!.pause();
+                await audioPlayer.pause();
               },
               onChanged: (val) {
                 setState(() {
                   sliderValue = val;
 
-                  audioPlayer.fixedPlayer!.seek(Duration(
+                  audioPlayer.seek(Duration(
                       milliseconds:
                           (maxDuration.inMilliseconds * val).toInt()));
+
                 });
               },
             ),
@@ -312,7 +311,7 @@ class _WaveformsDashboardState extends State<WaveformsDashboard> {
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    audioPlayer.fixedPlayer!.pause();
+                    audioPlayer.pause();
                   },
                   child: const Icon(
                     Icons.pause,
@@ -323,8 +322,8 @@ class _WaveformsDashboardState extends State<WaveformsDashboard> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    if (audioPlayer.fixedPlayer!.state == PlayerState.PAUSED) {
-                      audioPlayer.fixedPlayer!.resume();
+                    if (audioPlayer.state == PlayerState.paused) {
+                      audioPlayer.resume();
                     } else {
                       await playAudio();
                     }
@@ -338,7 +337,7 @@ class _WaveformsDashboardState extends State<WaveformsDashboard> {
                   onPressed: () {
                     setState(() {
                       sliderValue = 0;
-                      audioPlayer.fixedPlayer!
+                      audioPlayer
                           .seek(const Duration(milliseconds: 0));
                     });
                   },
@@ -595,12 +594,12 @@ class _WaveformsDashboardState extends State<WaveformsDashboard> {
                         iconDisabledColor: Colors.white,
                         items: const [
                           DropdownMenuItem(
-                            child: Text("Stroke"),
                             value: PaintingStyle.stroke,
+                            child: Text("Stroke"),
                           ),
                           DropdownMenuItem(
-                            child: Text("Fill"),
                             value: PaintingStyle.fill,
+                            child: Text("Fill"),
                           ),
                         ],
                         onChanged: (value) {
@@ -716,12 +715,12 @@ class _WaveformsDashboardState extends State<WaveformsDashboard> {
 
 class SquigglyWaveformExample extends StatelessWidget {
   const SquigglyWaveformExample({
-    Key? key,
+    super.key,
     required this.maxDuration,
     required this.elapsedDuration,
     required this.samples,
     required this.waveformCustomizations,
-  }) : super(key: key);
+  });
 
   final Duration maxDuration;
   final Duration elapsedDuration;
@@ -748,12 +747,12 @@ class SquigglyWaveformExample extends StatelessWidget {
 
 class CurvedPolgonWaveformExample extends StatelessWidget {
   const CurvedPolgonWaveformExample({
-    Key? key,
+    super.key,
     required this.maxDuration,
     required this.elapsedDuration,
     required this.samples,
     required this.waveformCustomizations,
-  }) : super(key: key);
+  });
 
   final Duration maxDuration;
   final Duration elapsedDuration;
@@ -781,12 +780,12 @@ class CurvedPolgonWaveformExample extends StatelessWidget {
 
 class RectangleWaveformExample extends StatelessWidget {
   const RectangleWaveformExample({
-    Key? key,
+    super.key,
     required this.maxDuration,
     required this.elapsedDuration,
     required this.samples,
     required this.waveformCustomizations,
-  }) : super(key: key);
+  });
 
   final Duration maxDuration;
   final Duration elapsedDuration;
@@ -819,12 +818,12 @@ class RectangleWaveformExample extends StatelessWidget {
 
 class PolygonWaveformExample extends StatelessWidget {
   const PolygonWaveformExample({
-    Key? key,
+    super.key,
     required this.maxDuration,
     required this.elapsedDuration,
     required this.samples,
     required this.waveformCustomizations,
-  }) : super(key: key);
+  });
 
   final Duration maxDuration;
   final Duration elapsedDuration;

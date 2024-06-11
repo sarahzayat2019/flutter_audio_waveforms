@@ -11,7 +11,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
 }
 
 class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+  const Home({super.key});
 
   @override
   State<Home> createState() => _HomeState();
@@ -32,7 +32,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   late Duration maxDuration;
   late Duration elapsedDuration;
-  late AudioCache audioPlayer;
+  late AudioPlayer audioPlayer;
   late List<double> samples;
   late int totalSamples;
 
@@ -60,15 +60,14 @@ class _HomeState extends State<Home> {
       "totalSamples": totalSamples,
     };
     final samplesData = await compute(loadparseJson, audioDataMap);
-    await audioPlayer.load(audioData[1]);
-    await audioPlayer.play(audioData[1]);
+    await audioPlayer.audioCache.load(audioData[1]);
+    // await audioPlayer.audioCache(audioData[1]);
     // maxDuration in milliseconds
     await Future.delayed(const Duration(milliseconds: 200));
 
-    int maxDurationInmilliseconds =
-        await audioPlayer.fixedPlayer!.getDuration();
+        await audioPlayer.getDuration().then((value) =>
+        maxDuration = value!);
 
-    maxDuration = Duration(milliseconds: maxDurationInmilliseconds);
     setState(() {
       samples = samplesData["samples"];
     });
@@ -83,20 +82,18 @@ class _HomeState extends State<Home> {
     // While the values above them are good for showing [PolygonWaveform]
     totalSamples = 1000;
     audioData = audioDataList[0];
-    audioPlayer = AudioCache(
-      fixedPlayer: AudioPlayer(),
-    );
+    audioPlayer = AudioPlayer();
 
     samples = [];
     maxDuration = const Duration(milliseconds: 1000);
     elapsedDuration = const Duration();
     parseData();
-    audioPlayer.fixedPlayer!.onPlayerCompletion.listen((_) {
+    audioPlayer.onPlayerComplete.listen((_) {
       setState(() {
         elapsedDuration = maxDuration;
       });
     });
-    audioPlayer.fixedPlayer!.onAudioPositionChanged
+    audioPlayer.onPositionChanged
         .listen((Duration timeElapsed) {
       setState(() {
         elapsedDuration = timeElapsed;
@@ -131,7 +128,7 @@ class _HomeState extends State<Home> {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  audioPlayer.fixedPlayer!.pause();
+                  audioPlayer.pause();
                 },
                 child: const Icon(
                   Icons.pause,
@@ -140,7 +137,7 @@ class _HomeState extends State<Home> {
               sizedBox,
               ElevatedButton(
                 onPressed: () {
-                  audioPlayer.fixedPlayer!.resume();
+                  audioPlayer.resume();
                 },
                 child: const Icon(Icons.play_arrow),
               ),
@@ -148,7 +145,7 @@ class _HomeState extends State<Home> {
               ElevatedButton(
                 onPressed: () {
                   setState(() {
-                    audioPlayer.fixedPlayer!
+                    audioPlayer
                         .seek(const Duration(milliseconds: 0));
                   });
                 },
