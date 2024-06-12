@@ -84,7 +84,7 @@ class _WaveformsDashboardState extends State<WaveformsDashboard> {
     await Future.delayed(const Duration(milliseconds: 200));
 
      await audioPlayer.getDuration()
-        .then((value) => maxDuration = value!);
+        .then((value) => maxDuration = value ?? Duration.zero);
 
   }
 

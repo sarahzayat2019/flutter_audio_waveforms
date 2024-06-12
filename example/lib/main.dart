@@ -66,7 +66,7 @@ class _HomeState extends State<Home> {
     await Future.delayed(const Duration(milliseconds: 200));
 
         await audioPlayer.getDuration().then((value) =>
-        maxDuration = value!);
+        maxDuration = value ?? Duration.zero);
 
     setState(() {
       samples = samplesData["samples"];
